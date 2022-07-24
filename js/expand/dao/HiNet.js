@@ -15,14 +15,14 @@ export function get(api) {
 //发送post请求
 export function post(api) {
   return params => {
-    return async queryParmas => {
+    return async (queryParmas = {}) => {
       const {headers, url} = Constants;
       let data = params instanceof FormData ? params : JSON.stringify(params);
       return handleData(fetch(buildParams(url + api, queryParmas)), {
-        method: 'POST',
+        method: 'post',
         body: data,
         headers: {
-          'content-type': 'application/json',
+          'Content-Type': 'application/json',
           ...headers,
         },
       });

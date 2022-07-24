@@ -1,15 +1,49 @@
 import React, {useState} from 'react';
 import {SafeAreaView, View, StyleSheet} from 'react-native';
 import {Input, ConfirmButton, Tips, NavBar} from '../common/LoginComponents';
+import LoginDao from '../expand/dao/LoginDao';
+import NavigationUtil from '../navigator/NavigationUtil';
 
-export default function LoginPage() {
+export default function LoginPage(props) {
+  const {navigation} = props;
   const [userName, setUserName] = useState('');
   const [password, setPassword] = useState('');
   const [msg, setMsg] = useState('ddd');
-  const onLogin = () => {};
+  const [helpUrl, setHelpurl] = useState(
+    'https://doc.devio.org/api-help/docs/rn-api-help.html',
+  );
+  const onLogin = () => {
+    if (userName === '' || password === '') {
+      setMsg('用户名或密码不能为空');
+      return;
+    }
+    setMsg('');
+    setHelpurl('');
+    const LoginDaoFn = LoginDao();
+    LoginDaoFn()
+      .login(userName, password)
+      .then(res => {
+        setMsg('登录成功');
+        //清空之前到堆栈，跳转到首页
+        NavigationUtil.resetToHomePage({navigation});
+      })
+      .catch(err => {
+        const {code, data: {helpUrl = ''} = {}, msg} = err;
+        setMsg(msg);
+      });
+  };
+
+  const jumpToRegistrationPage = () => {
+    NavigationUtil.registration({navigation});
+  };
+
   return (
     <SafeAreaView style={styles.root}>
-      <NavBar leftTitle="登录" rightTitle="注册" />
+      <NavBar
+        leftTitle="登录"
+        rightTitle="注册"
+        onRightClick={jumpToRegistrationPage}
+      />
       <View style={styles.line} />
       <View style={styles.content}>
         <Input
@@ -25,7 +59,7 @@ export default function LoginPage() {
           onChangeText={text => setPassword(text)}
         />
         <ConfirmButton title="登录" onClick={onLogin} />
-        <Tips msg={msg} helpUrl="https://www.baidu.com" />
+        <Tips msg={msg} helpUrl={helpUrl} />
       </View>
     </SafeAreaView>
   );
